@@ -1,8 +1,3 @@
-
-<p align="center">
-  <img src="https://unifip.edu.br/imagens/logos/unifip_logo.svg" alt="UNIFIP" width="120" />
-</p>
-
 <h1 align="center">Ecommerce Api</h1>
 
 
