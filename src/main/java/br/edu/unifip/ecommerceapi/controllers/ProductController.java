@@ -18,9 +18,6 @@ import java.util.UUID;
 @RequestMapping("api/products")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ProductController {
-//    @Autowired
-//    private ProductRepository productRepository;
-
     final ProductService productService;
 
     public ProductController(ProductService productService) {
@@ -30,6 +27,11 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findAll());
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<Product>> getProductsIsActive() {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.findByActiveTrue());
     }
 
     @GetMapping("/{id}")

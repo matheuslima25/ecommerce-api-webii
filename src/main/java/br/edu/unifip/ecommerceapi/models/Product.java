@@ -23,5 +23,7 @@ public class Product implements Serializable {
     private String description;
     @Column(nullable = false)
     private BigDecimal price;
+    @Column(columnDefinition="BOOLEAN DEFAULT true")
+    private boolean active;
 
 }
