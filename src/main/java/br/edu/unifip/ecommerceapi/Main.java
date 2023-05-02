@@ -15,6 +15,6 @@ public class Main {
 
 	@GetMapping("/")
 	public String index() {
-		return "Hello, world!";
+		return "Welcome to the wonderful e-commerce!";
 	}
 }

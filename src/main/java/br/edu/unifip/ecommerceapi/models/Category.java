@@ -9,8 +9,8 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "TB_PRODUCT")
-public class Product implements Serializable {
+@Table(name = "TB_CATEGORY")
+public class Category implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
@@ -21,8 +21,5 @@ public class Product implements Serializable {
     private String name;
     @Column(nullable = false, length = 130)
     private String description;
-    @Column(nullable = false)
-    private BigDecimal price;
     private boolean active = true;
-
 }
