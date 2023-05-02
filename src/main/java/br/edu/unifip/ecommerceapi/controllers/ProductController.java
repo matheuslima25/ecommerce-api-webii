@@ -78,13 +78,13 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productOptional.get());
     }
 
-    @GetMapping("findByName/{name}")
-    public ResponseEntity<List<Product>> getProductByName(@PathVariable(value = "name") String name) {
+    @GetMapping("/findByName")
+    public ResponseEntity<List<Product>> getProductByName(@RequestParam(value = "name") String name) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findByName(name));
     }
 
-    @GetMapping("findByCategoryName/{name}")
-    public ResponseEntity<List<Product>> getProductByCategoryName(@PathVariable(value = "name") String name) {
+    @GetMapping("/findByCategoryName")
+    public ResponseEntity<List<Product>> getProductByCategoryName(@RequestParam(value = "name") String name) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findByCategoryName(name));
     }
 }
