@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -79,12 +80,12 @@ public class ProductController {
     }
 
     @GetMapping("/findByName")
-    public ResponseEntity<List<Product>> getProductByName(@RequestParam(value = "name") String name) {
+    public ResponseEntity<List<Product>> getProductByName(@Validated @RequestParam(value = "name") String name) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findByName(name));
     }
 
     @GetMapping("/findByCategoryName")
-    public ResponseEntity<List<Product>> getProductByCategoryName(@RequestParam(value = "name") String name) {
+    public ResponseEntity<List<Product>> getProductByCategoryName(@Validated @RequestParam(value = "name") String name) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findByCategoryName(name));
     }
 }
