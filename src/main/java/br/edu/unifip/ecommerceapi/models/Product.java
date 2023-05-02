@@ -11,6 +11,10 @@ import java.util.UUID;
 @Entity
 @Data
 @Table(name = "TB_PRODUCT")
+@NamedQuery(name = "Product.findByName",
+        query = "SELECT p FROM Product p WHERE p.name = :name")
+@NamedQuery(name = "Product.findByCategoryName",
+        query = "SELECT p FROM Product p JOIN p.category c WHERE c.name = :name")
 public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
 

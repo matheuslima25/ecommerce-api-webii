@@ -75,4 +75,12 @@ public class ProductService {
     public List<Product> findByActiveTrue() {
         return productRepository.findByActiveTrue();
     }
+
+    public List<Product> findByName(String name) {
+        return productRepository.findByName(name);
+    }
+
+    public List<Product> findByCategoryName(String name) {
+        return productRepository.findByCategoryName(name);
+    }
 }
