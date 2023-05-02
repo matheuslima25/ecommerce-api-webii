@@ -46,7 +46,7 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<Object> saveCategory(@RequestBody @Valid CategoryDto categoryDto) {
         var category = new Category();
-        BeanUtils.copyProperties(categoryDto, category); // O que vai ser convertido para o quê vai ser convertido
+        BeanUtils.copyProperties(categoryDto, category);
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.save(category));
     }
 

@@ -1,5 +1,6 @@
 package br.edu.unifip.ecommerceapi.services;
 
+import br.edu.unifip.ecommerceapi.models.Category;
 import br.edu.unifip.ecommerceapi.models.Product;
 import br.edu.unifip.ecommerceapi.repositories.ProductRepository;
 import jakarta.transaction.Transactional;
@@ -18,9 +19,11 @@ import java.lang.reflect.Field;
 public class ProductService {
 
     final ProductRepository productRepository;
+    final CategoryService categoryService;
 
-    public ProductService(ProductRepository productRepository){
+    public ProductService(ProductRepository productRepository, CategoryService categoryService){
         this.productRepository = productRepository;
+        this.categoryService = categoryService;
     }
 
     public List<Product> findAll() {
@@ -32,7 +35,12 @@ public class ProductService {
     }
 
     @Transactional
-    public Product save(Product product){
+    public Product save(Product product, UUID categoryId){
+        if (categoryId != null) {
+            Category category = categoryService.findById(categoryId)
+                    .orElseThrow(() -> new RuntimeException("Category not found."));
+            product.setCategory(category);
+        }
         return productRepository.save(product);
     }
 
@@ -43,6 +51,14 @@ public class ProductService {
     }
 
     public Product partialUpdate(Product product, Map<Object, Object> objectMap) {
+        if (objectMap.containsKey("category")) {
+            UUID categoryId = (UUID) objectMap.get("category");
+            Category category = categoryService.findById(categoryId)
+                    .orElseThrow(() -> new RuntimeException("Category not found."));
+            product.setCategory(category);
+            objectMap.remove("category");
+        }
+
         objectMap.forEach((key, value) -> {
             Field field = ReflectionUtils.findField(Product.class, (String) key);
             field.setAccessible(true);

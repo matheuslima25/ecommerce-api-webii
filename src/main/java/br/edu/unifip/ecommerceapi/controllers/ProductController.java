@@ -1,6 +1,7 @@
 package br.edu.unifip.ecommerceapi.controllers;
 
 import br.edu.unifip.ecommerceapi.dtos.ProductDto;
+import br.edu.unifip.ecommerceapi.models.Category;
 import br.edu.unifip.ecommerceapi.models.Product;
 import br.edu.unifip.ecommerceapi.services.ProductService;
 import jakarta.validation.Valid;
@@ -47,7 +48,14 @@ public class ProductController {
     public ResponseEntity<Object> saveProduct(@RequestBody @Valid ProductDto productDto) {
         var product = new Product();
         BeanUtils.copyProperties(productDto, product); // O que vai ser convertido para o quê vai ser convertido
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.save(product));
+
+        UUID categoryId = null;
+
+        if (productDto.getCategory() != null) {
+            categoryId = productDto.getCategory();
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.save(product, categoryId));
     }
 
     @DeleteMapping("/{id}")
