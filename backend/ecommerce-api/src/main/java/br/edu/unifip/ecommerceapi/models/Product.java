@@ -2,6 +2,8 @@ package br.edu.unifip.ecommerceapi.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -26,7 +28,8 @@ public class Product implements Serializable {
     private BigDecimal price;
     private boolean active = true;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 

@@ -52,8 +52,8 @@ public class ProductService {
 
     public Product partialUpdate(Product product, Map<Object, Object> objectMap) {
         if (objectMap.containsKey("category")) {
-            UUID categoryId = (UUID) objectMap.get("category");
-            Category category = categoryService.findById(categoryId)
+            String categoryId = (String) objectMap.get("category");
+            Category category = categoryService.findById(UUID.fromString(categoryId))
                     .orElseThrow(() -> new RuntimeException("Category not found."));
             product.setCategory(category);
             objectMap.remove("category");
