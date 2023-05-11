@@ -68,10 +68,10 @@ public class ProductService {
             Field field = ReflectionUtils.findField(Product.class, (String) key);
             field.setAccessible(true);
 
-            try {
-                value = BigDecimal.valueOf((double) value);
+            if (field.getType() == BigDecimal.class && value instanceof String) {
+                value = new BigDecimal((String) value);
             }
-            catch(ClassCastException ignored) { }
+
             ReflectionUtils.setField(field, product, value);
         });
         return productRepository.save(product);
