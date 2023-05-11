@@ -1,67 +1,51 @@
 <template>
   <div>
-    <h2>Product Registation</h2>
-    <form @submit.prevent="save">
-      <div class="form-group">
-        <label>Product name</label>
-        <input type="text" v-model="product.name" class="form-control" placeholder="Product name">
+    <h2 class="mt-2">Product Registation</h2>
+    <form @submit.prevent="save" class="m-5">
+      <div class="form-group" v-if="product.image">
+        <img :src="baseUrl + product.image" class="rounded mx-auto d-block" :alt="`${product.name}`">
       </div>
       <div class="form-group">
-        <label>Product description</label>
-        <input type="text" v-model="product.description" class="form-control" placeholder="Product description">
+        <label for="formName" class="form-label">Product name</label>
+        <input id="formName" type="text" v-model="product.name" class="form-control" placeholder="Product name">
       </div>
       <div class="form-group">
-        <label>Product price</label>
-        <input type="number" step=".01" v-model="product.price" class="form-control" placeholder="0.0">
+        <label for="formDescription" class="form-label">Product description</label>
+        <input id="formDescription" type="text" v-model="product.description" class="form-control"
+          placeholder="Product description">
       </div>
       <div class="form-group">
-        <label>Product category</label>
-        <select id="category-select" v-model="selectedCategory">
+        <label for="formPrice" class="form-label">Product price</label>
+        <input id="formPrice" type="number" step=".01" v-model="product.price" class="form-control" placeholder="0.0">
+      </div>
+      <div class="form-group">
+        <label for="formCategory" class="form-label">Product category</label>
+        <select id="formCategory" v-model="selectedCategory" class="form-select">
           <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
         </select>
       </div>
-      <button type="submit" class="btn btn-primary">Save</button>
+      <div class="form-group">
+        <label for="formImage" class="form-label">Image</label>
+        <input class="form-control" type="file" id="formImage">
+      </div>
+      <div class="mt-3 mb-3">
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
     </form>
-    <h2>Product View</h2>
-    <table class="table table-dark">
-      <thead>
-        <tr>
-          <th scope="col">ID</th>
-          <th scope="col">Name</th>
-          <th scope="col">Description</th>
-          <th scope="col">Price</th>
-          <th scope="col">Category</th>
-          <th scope="col">Option</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="product in result" v-bind:key="product.id">
-
-          <td>{{ product.id }}</td>
-          <td>{{ product.name }}</td>
-          <td>{{ product.description }}</td>
-          <td>{{ product.price }}</td>
-          <td>{{ product.category.name }}</td>
-          <td>
-            <button type="button" class="btn btn-warning" @click="editProduct(product)">Edit</button>
-            <button type="button" class="btn btn-danger" @click="deleteProduct(product)">Delete</button>
-          </td>
-        </tr>
-
-      </tbody>
-    </table>
-
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import axios from 'axios'
+import router from '../router'
 
 export default {
   name: 'Product',
   data () {
     return {
+      baseUrl: 'http://localhost:8080',
+
       result: [],
 
       categories: [],
@@ -72,7 +56,8 @@ export default {
         name: '',
         description: '',
         price: '',
-        category: null
+        category: null,
+        image: null
       }
     }
   },
@@ -80,6 +65,11 @@ export default {
     this.getProductList()
   },
   mounted () {
+    // Extrai o id do parâmetro da URL usando a biblioteca `vue-router`
+    const productId = this.$route.params.id
+    if (productId) {
+      this.getProduct(productId)
+    }
     this.getCategoryList()
   },
   methods: {
@@ -113,8 +103,14 @@ export default {
       const formData = new FormData()
       formData.append('name', this.product.name)
       formData.append('description', this.product.description)
-      formData.append('price', this.product.price)
+      formData.append('price', parseFloat(this.product.price))
       formData.append('category', this.selectedCategory)
+
+      // adicionar a imagem selecionada ao FormData
+      const imageInput = document.querySelector('#formImage')
+      if (imageInput.files[0]) {
+        formData.append('image', imageInput.files[0])
+      }
 
       axios
         .post('http://localhost:8080/api/products', formData, {
@@ -124,8 +120,7 @@ export default {
         })
         .then(({ data }) => {
           alert('Product saved successfully!')
-          this.resetForm()
-          this.getProductList()
+          router.push('/')
         })
         .catch((error) => {
           alert('Error saving product!')
@@ -140,9 +135,6 @@ export default {
       if (this.product.name !== oldProduct.name) {
         formData.append('name', this.product.name)
         updatedFields.name = this.product.name
-        console.log('name updated')
-        console.log(this.product.name)
-        console.log(updatedFields)
       }
 
       if (this.product.description !== oldProduct.description) {
@@ -152,12 +144,19 @@ export default {
 
       if (this.product.price !== oldProduct.price) {
         formData.append('price', this.product.price)
-        updatedFields.price = this.product.price
+        updatedFields.price = parseFloat(this.product.price)
       }
 
       if (this.selectedCategory !== oldProduct.category.id) {
         formData.append('category', this.selectedCategory)
         updatedFields.category = this.selectedCategory
+      }
+
+      // adicionar a imagem selecionada ao FormData
+      const imageInput = document.getElementById('formImage')
+      const imageFile = imageInput.files[0]
+      if (imageFile) {
+        formData.append('image', imageFile)
       }
 
       const index = this.result.findIndex((p) => p.id === this.product.id)
@@ -178,7 +177,6 @@ export default {
         })
         .then(({ data }) => {
           alert('Product updated successfully!')
-          this.resetForm()
 
           // atualize a variável 'result' com os dados atualizados
           const index = this.result.findIndex((p) => p.id === this.product.id)
@@ -187,7 +185,7 @@ export default {
             Vue.set(this.result, index, updatedProduct)
           }
 
-          this.getProductList()
+          router.push('/')
         })
         .catch((error) => {
           alert('Error updating product!')
@@ -212,6 +210,27 @@ export default {
     editProduct (product) {
       this.product = this.cloneProduct(product)
       this.selectedCategory = this.product.category.id
+    },
+    getProduct (productId) {
+      // Busca o produto pelo id usando a API
+      axios.get(`http://localhost:8080/api/products/${productId}`)
+        .then(response => {
+          const data = response.data
+          // Preenche o objeto `product` com os dados do produto retornado
+          this.product = {
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            price: data.price,
+            category: data.category,
+            image: data.image
+          }
+          // Define a categoria selecionada no dropdown
+          this.selectedCategory = data.category.id
+        })
+        .catch(error => {
+          console.log(error)
+        })
     },
     resetForm () {
       this.product = {
