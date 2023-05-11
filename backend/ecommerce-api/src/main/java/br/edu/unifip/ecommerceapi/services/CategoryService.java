@@ -18,7 +18,7 @@ public class CategoryService {
 
     final CategoryRepository categoryRepository;
 
-    public CategoryService(CategoryRepository categoryRepository){
+    public CategoryService(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
@@ -31,14 +31,19 @@ public class CategoryService {
     }
 
     @Transactional
-    public Category save(Category category){
+    public Category save(Category category) {
         return categoryRepository.save(category);
     }
 
-    @Transactional // você garante que eles vão ser executados dentro um contexto transacional e o rollback
-    // será feito caso ocorra algum erro
-    public void delete(Category category) {
+    @Transactional
+    public void hardDelete(Category category) {
         categoryRepository.delete(category);
+    }
+
+    @Transactional
+    public void softDelete(Category category) {
+        Optional<Category> categoryInstance = categoryRepository.findById(category.getId());
+        categoryInstance.ifPresent(value -> value.setActive(false));
     }
 
     public Category partialUpdate(Category category, Map<Object, Object> objectMap) {
@@ -48,8 +53,8 @@ public class CategoryService {
 
             try {
                 value = BigDecimal.valueOf((double) value);
+            } catch (ClassCastException ignored) {
             }
-            catch(ClassCastException ignored) { }
             ReflectionUtils.setField(field, category, value);
         });
         return categoryRepository.save(category);

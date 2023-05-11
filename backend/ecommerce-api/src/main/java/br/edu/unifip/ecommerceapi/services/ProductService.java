@@ -27,7 +27,7 @@ public class ProductService {
     }
 
     public List<Product> findAll() {
-        return productRepository.findAll();
+        return productRepository.findByActiveTrue();
     }
 
     public Optional<Product> findById(UUID id) {
@@ -44,10 +44,15 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    @Transactional // você garante que eles vão ser executados dentro um contexto transacional e o rollback
-    // será feito caso ocorra algum erro
-    public void delete(Product product) {
+    @Transactional
+    public void hardDelete(Product product) {
         productRepository.delete(product);
+    }
+
+    @Transactional
+    public void softDelete(Product product) {
+        Optional<Product> productInstance = productRepository.findById(product.getId());
+        productInstance.ifPresent(value -> value.setActive(false));
     }
 
     public Product partialUpdate(Product product, Map<Object, Object> objectMap) {
