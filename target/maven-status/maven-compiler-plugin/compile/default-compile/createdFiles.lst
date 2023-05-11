@@ -1,0 +1,13 @@
+br\edu\unifip\ecommerceapi\repositories\CategoryRepository.class
+br\edu\unifip\ecommerceapi\repositories\ProductRepository.class
+br\edu\unifip\ecommerceapi\services\CategoryService.class
+br\edu\unifip\ecommerceapi\models\Category.class
+br\edu\unifip\ecommerceapi\utils\FileUploadUtil.class
+br\edu\unifip\ecommerceapi\models\Product.class
+br\edu\unifip\ecommerceapi\dtos\ProductDto.class
+br\edu\unifip\ecommerceapi\dtos\CategoryDto.class
+br\edu\unifip\ecommerceapi\utils\FileDownloadUtil.class
+br\edu\unifip\ecommerceapi\controllers\ProductController.class
+br\edu\unifip\ecommerceapi\Main.class
+br\edu\unifip\ecommerceapi\controllers\CategoryController.class
+br\edu\unifip\ecommerceapi\services\ProductService.class
