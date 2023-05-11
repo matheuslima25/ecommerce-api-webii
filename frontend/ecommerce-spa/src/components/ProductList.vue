@@ -53,6 +53,20 @@ export default {
       }
     }
   },
+  created () {
+    axios.interceptors.request.use(
+      config => {
+        const token = localStorage.getItem('token')
+        if (token) {
+          config.headers.Authorization = token
+        }
+        return config
+      },
+      error => {
+        return Promise.reject(error)
+      }
+    )
+  },
   mounted () {
     this.getCategoryList()
     this.getProductList()
@@ -70,15 +84,21 @@ export default {
         })
     },
     async getCategoryList () {
-      const response = await fetch('http://localhost:8080/api/categories')
-      const data = await response.json()
-      this.categories = data
+      axios.get('http://localhost:8080/api/categories')
+        .then(({ data }) => {
+          this.result = data
+          this.categories = data.map(p => ({ ...p }))
+        })
+        .catch((error) => {
+          alert('Error loading categories!')
+          console.log(error)
+        })
     },
     deleteProduct (product) {
       const confirmed = confirm('Are you sure you want to delete this product?')
       if (confirmed) {
         axios
-          .delete(`http://localhost:8080/api/products/${product.id}`)
+          .delete(`http://localhost:8080/api/products/soft-delete/${product.id}`)
           .then(({ data }) => {
             alert('Product deleted successfully!')
             this.getProductList()

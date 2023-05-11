@@ -18,9 +18,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import static br.edu.unifip.ecommerceapi.constants.SecurityConstants.SIGN_IN_URL;
-import static br.edu.unifip.ecommerceapi.constants.SecurityConstants.SIGN_UP_URL;
+import java.util.Arrays;
+import java.util.Collections;
+
+import static br.edu.unifip.ecommerceapi.constants.SecurityConstants.*;
 
 @Configuration
 @EnableWebSecurity
@@ -45,7 +50,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers(SIGN_UP_URL, SIGN_IN_URL).permitAll()
+                .requestMatchers(SIGN_UP_URL, SIGN_IN_URL, PRODUCT_IMAGES_URL, USER_IMAGES_URL).permitAll()
                 .and()
                 .authorizeHttpRequests().requestMatchers("/api/users/**", "/api/products/**", "/api/categories/**")
                 .authenticated().and()
@@ -54,7 +59,22 @@ public class SecurityConfig {
                 .and()
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors() // adiciona a configuração CORS
+                .and()
                 .build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Collections.singletonList("*")); // permitir qualquer origem
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 
     @Bean
