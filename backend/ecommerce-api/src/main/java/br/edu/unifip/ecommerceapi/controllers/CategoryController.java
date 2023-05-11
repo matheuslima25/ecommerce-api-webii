@@ -2,6 +2,7 @@ package br.edu.unifip.ecommerceapi.controllers;
 
 import br.edu.unifip.ecommerceapi.dtos.CategoryDto;
 import br.edu.unifip.ecommerceapi.models.Category;
+import br.edu.unifip.ecommerceapi.models.Product;
 import br.edu.unifip.ecommerceapi.services.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
@@ -37,10 +38,7 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getCategoryById(@PathVariable(value = "id") UUID id) {
         Optional<Category> categoryOptional = categoryService.findById(id);
-        if (categoryOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category not found.");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(categoryOptional.get());
+        return categoryOptional.<ResponseEntity<Object>>map(category -> ResponseEntity.status(HttpStatus.OK).body(category)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category not found."));
     }
 
     @PostMapping
@@ -50,13 +48,23 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.save(category));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteCategory(@PathVariable(value = "id") UUID id) {
+    @DeleteMapping("/soft-delete/{id}")
+    public ResponseEntity<Object> softDeleteProduct(@PathVariable(value = "id") UUID id) {
         Optional<Category> categoryOptional = categoryService.findById(id);
         if (categoryOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category not found.");
         }
-        categoryService.delete(categoryOptional.get());
+        categoryService.softDelete(categoryOptional.get());
+        return ResponseEntity.status(HttpStatus.OK).body("Category deleted successfully.");
+    }
+
+    @DeleteMapping("/hard-delete/{id}")
+    public ResponseEntity<Object> hardDeleteProduct(@PathVariable(value = "id") UUID id) {
+        Optional<Category> categoryOptional = categoryService.findById(id);
+        if (categoryOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category not found.");
+        }
+        categoryService.hardDelete(categoryOptional.get());
         return ResponseEntity.status(HttpStatus.OK).body("Category deleted successfully.");
     }
 

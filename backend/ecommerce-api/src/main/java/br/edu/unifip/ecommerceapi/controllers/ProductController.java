@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,7 @@ public class ProductController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<List<Product>> getAllProducts() {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findAll());
     }
@@ -46,10 +48,7 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getProductById(@PathVariable(value = "id") UUID id) {
         Optional<Product> productOptional = productService.findById(id);
-        if (productOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(productOptional.get());
+        return productOptional.<ResponseEntity<Object>>map(product -> ResponseEntity.status(HttpStatus.OK).body(product)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found."));
     }
 
     @PostMapping
@@ -82,13 +81,23 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.save(product, categoryId));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteProduct(@PathVariable(value = "id") UUID id) {
+    @DeleteMapping("/soft-delete/{id}")
+    public ResponseEntity<Object> softDeleteProduct(@PathVariable(value = "id") UUID id) {
         Optional<Product> productOptional = productService.findById(id);
         if (productOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
         }
-        productService.delete(productOptional.get());
+        productService.softDelete(productOptional.get());
+        return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully.");
+    }
+
+    @DeleteMapping("/hard-delete/{id}")
+    public ResponseEntity<Object> hardDeleteProduct(@PathVariable(value = "id") UUID id) {
+        Optional<Product> productOptional = productService.findById(id);
+        if (productOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+        }
+        productService.hardDelete(productOptional.get());
         return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully.");
     }
 
@@ -146,7 +155,7 @@ public class ProductController {
 
         Resource resource = null;
         try {
-            resource = downloadUtil.getFileAsResource(fileCode);
+            resource = downloadUtil.getFileAsResource(fileCode, "product-images");
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
         }

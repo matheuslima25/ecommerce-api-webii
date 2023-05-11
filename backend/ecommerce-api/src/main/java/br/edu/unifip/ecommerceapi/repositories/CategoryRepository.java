@@ -11,6 +11,8 @@ import java.util.UUID;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
     Optional<Category> findById(UUID id);
+
     void delete(Category category);
+
     List<Category> findByActiveTrue();
 }
