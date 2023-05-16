@@ -27,12 +27,18 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<Category>> getAllCategorys() {
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findAll());
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findByActiveTrue());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getCategoryById(@PathVariable(value = "id") UUID id) {
         Optional<Category> categoryOptional = categoryService.findById(id);
+
+        // Verificar se o registro está ativo
+        if (categoryOptional.isPresent() && !categoryOptional.get().isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Category is not active.");
+        }
+
         return categoryOptional.<ResponseEntity<Object>>map(category -> ResponseEntity.status(HttpStatus.OK).body(category)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category not found."));
     }
 

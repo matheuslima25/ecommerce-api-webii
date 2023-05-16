@@ -4,8 +4,10 @@ import br.edu.unifip.ecommerceapi.dtos.AuthRequest;
 import br.edu.unifip.ecommerceapi.dtos.UserDto;
 import br.edu.unifip.ecommerceapi.models.Category;
 import br.edu.unifip.ecommerceapi.models.Product;
+import br.edu.unifip.ecommerceapi.models.Role;
 import br.edu.unifip.ecommerceapi.models.User;
 import br.edu.unifip.ecommerceapi.services.JwtService;
+import br.edu.unifip.ecommerceapi.services.RoleService;
 import br.edu.unifip.ecommerceapi.services.UserService;
 import br.edu.unifip.ecommerceapi.utils.FileDownloadUtil;
 import br.edu.unifip.ecommerceapi.utils.FileUploadUtil;
@@ -41,10 +43,13 @@ public class UserController {
 
     final JwtService jwtService;
 
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtService) {
+    final RoleService roleService;
+
+    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtService, RoleService roleService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.roleService = roleService;
     }
 
     @GetMapping
@@ -55,6 +60,12 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getUserById(@PathVariable(value = "id") UUID id) {
         Optional<User> userOptional = userService.findById(id);
+
+        // Verificar se o registro está ativo
+        if (userOptional.isPresent() && !userOptional.get().isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not active.");
+        }
+
         return userOptional.<ResponseEntity<Object>>map(user -> ResponseEntity.status(HttpStatus.OK).body(user)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found."));
     }
 
@@ -82,10 +93,24 @@ public class UserController {
         // Salvar o usuário
         User savedUser = userService.save(user);
 
-        // Gerar token de autenticação
+        // Obter as roles selecionadas do DTO
+        List<UUID> roleIds = userDto.getRoles();
+
+        // Verificar se as roles existem e adicioná-las ao usuário
+        for (UUID roleId : roleIds) {
+            Optional<Role> roleOptional = roleService.findById(roleId);
+            if (roleOptional.isPresent()) {
+                Role role = roleOptional.get();
+                System.out.println(role);
+                savedUser.getRoles().add(role);
+            }
+        }
+
+        // Salvar o usuário atualizado com as roles
+        userService.save(savedUser);
+
         String token = jwtService.generateToken(savedUser.getUsername());
 
-        // Retornar token junto com a resposta
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
 
@@ -151,6 +176,23 @@ public class UserController {
         // Adicionar a url da imagem ao objeto mapeado, se ela foi enviada
         if (imageUrl != null) {
             objectMap.put("image", imageUrl);
+        }
+
+        // Atualizar as roles do usuário
+        if (objectMap.containsKey("roles")) {
+            Set<Role> roles = new HashSet<>();
+            String[] roleIds = objectMap.get("roles").toString().split(",");
+            for (String roleId : roleIds) {
+                try {
+                    UUID roleUUID = UUID.fromString(roleId.trim());
+                    Optional<Role> roleOptional = roleService.findById(roleUUID);
+                    roleOptional.ifPresent(roles::add);
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid role ID: " + roleId);
+                }
+            }
+            objectMap.remove("roles");
+            objectMap.put("roles", roles);
         }
 
         userService.partialUpdate(instance, objectMap);

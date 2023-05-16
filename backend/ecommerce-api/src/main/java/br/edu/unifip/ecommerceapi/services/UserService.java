@@ -1,5 +1,6 @@
 package br.edu.unifip.ecommerceapi.services;
 
+import br.edu.unifip.ecommerceapi.models.Role;
 import br.edu.unifip.ecommerceapi.models.User;
 import br.edu.unifip.ecommerceapi.repositories.UserRepository;
 import jakarta.transaction.Transactional;

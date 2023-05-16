@@ -44,6 +44,12 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getProductById(@PathVariable(value = "id") UUID id) {
         Optional<Product> productOptional = productService.findById(id);
+
+        // Verificar se o registro está ativo
+        if (productOptional.isPresent() && !productOptional.get().isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is not active.");
+        }
+
         return productOptional.<ResponseEntity<Object>>map(product -> ResponseEntity.status(HttpStatus.OK).body(product)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found."));
     }
 

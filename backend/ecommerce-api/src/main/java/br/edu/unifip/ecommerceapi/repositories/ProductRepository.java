@@ -18,9 +18,9 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     List<Product> findByActiveTrue();
 
-    @Query("SELECT p FROM Product p WHERE p.name = :name")
+    @Query("SELECT p FROM Product p WHERE p.name = :name and p.active = true")
     List<Product> findByName(@Param("name") String name);
 
-    @Query("SELECT p FROM Product p JOIN p.category c WHERE c.name = :name")
+    @Query("SELECT p FROM Product p JOIN p.category c WHERE c.name = :name and p.active = true")
     List<Product> findByCategoryName(@Param("name") String name);
 }

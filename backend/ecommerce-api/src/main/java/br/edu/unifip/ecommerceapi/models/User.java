@@ -13,9 +13,9 @@ import java.util.UUID;
 @Data
 @Table(name = "TB_USER",
         uniqueConstraints = {
-        @UniqueConstraint(columnNames = "username"),
-        @UniqueConstraint(columnNames = "email")
-})
+                @UniqueConstraint(columnNames = "username"),
+                @UniqueConstraint(columnNames = "email")
+        })
 @JsonIgnoreProperties({"password",})
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -24,20 +24,26 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+
     @Column(nullable = false, unique = true)
     private String username;
+
     @Column(nullable = false)
     private String password;
+
     @Column(nullable = false)
     private String firstName;
+
     @Column(nullable = false)
     private String lastName;
+
     @Column(nullable = false)
     private String email;
+
     @Column(nullable = true, length = 64)
     private String image;
-    @Column(nullable = false)
-    @ManyToMany(fetch = FetchType.EAGER) // A forma que os dados são buscados, nesse caso, antecipadamente, antes de salvar uma instância
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
             name = "TB_USER_ROLE",
             joinColumns = @JoinColumn(name = "user_id"),
