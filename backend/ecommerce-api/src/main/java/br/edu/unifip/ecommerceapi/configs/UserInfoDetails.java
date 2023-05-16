@@ -16,10 +16,10 @@ public class UserInfoDetails implements UserDetails {
     private final List<GrantedAuthority> authorities;
 
     public UserInfoDetails(User user) {
-        username=user.getUsername();
-        password=user.getPassword();
-        authorities= Arrays.stream(user.getRoles().split(","))
-                .map(SimpleGrantedAuthority::new)
+        username = user.getUsername();
+        password = user.getPassword();
+        authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().toString()))
                 .collect(Collectors.toList());
     }
 

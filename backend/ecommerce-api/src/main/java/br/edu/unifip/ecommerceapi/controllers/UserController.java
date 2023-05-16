@@ -2,6 +2,8 @@ package br.edu.unifip.ecommerceapi.controllers;
 
 import br.edu.unifip.ecommerceapi.dtos.AuthRequest;
 import br.edu.unifip.ecommerceapi.dtos.UserDto;
+import br.edu.unifip.ecommerceapi.models.Category;
+import br.edu.unifip.ecommerceapi.models.Product;
 import br.edu.unifip.ecommerceapi.models.User;
 import br.edu.unifip.ecommerceapi.services.JwtService;
 import br.edu.unifip.ecommerceapi.services.UserService;
@@ -49,11 +51,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
     }
 
-    @GetMapping("/active")
-    public ResponseEntity<List<User>> getUsersIsActive() {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.findByActiveTrue());
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<Object> getUserById(@PathVariable(value = "id") UUID id) {
         Optional<User> userOptional = userService.findById(id);
@@ -75,32 +72,40 @@ public class UserController {
 
             try {
                 String filecode = FileUploadUtil.saveFile(fileName, uploadDir, multipartFile);
-                user.setImage("/api/users/user-images/" + filecode);
+                user.setImage("/api/images/user-images/" + filecode);
             } catch (IOException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Image not accepted.");
             }
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(user));
+        // Salvar o usuário
+        User savedUser = userService.save(user);
+
+        // Gerar token de autenticação
+        String token = jwtService.generateToken(savedUser.getUsername());
+
+        // Retornar token junto com a resposta
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping("/soft-delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Object> softDeleteUser(@PathVariable(value = "id") UUID id) {
         Optional<User> userOptional = userService.findById(id);
         if (userOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
         }
-        userService.softDelete(userOptional.get());
-        return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully.");
-    }
 
-    @DeleteMapping("/hard-delete/{id}")
-    public ResponseEntity<Object> hardDeleteUser(@PathVariable(value = "id") UUID id) {
-        Optional<User> userOptional = userService.findById(id);
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        User instance = userOptional.get();
+
+        // Verificar se o registro está ativo
+        if (!instance.isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Category is not active.");
         }
-        userService.hardDelete(userOptional.get());
+
+        userService.softDelete(instance);
         return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully.");
     }
 
@@ -111,10 +116,20 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
         }
 
+        User instance = userOptional.get();
+
+        // Verificar se o registro está ativo
+        if (!instance.isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not active.");
+        }
+
         Map<Object, Object> objectMap = new HashMap<>();
         for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
             objectMap.put(entry.getKey(), entry.getValue()[0]);
         }
+
+        // Remover a chave "password" do objeto mapeado, se presente
+        objectMap.remove("password");
 
         // Salvar a url da imagem em uma variável separada
         String imageUrl = null;
@@ -126,7 +141,7 @@ public class UserController {
 
             try {
                 String filecode = FileUploadUtil.saveFile(fileName, uploadDir, multipartFile);
-                imageUrl = "/api/users/user-images/" + filecode;
+                imageUrl = "/api/images/user-images/" + filecode;
             } catch (IOException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Image not accepted.");
             }
@@ -137,44 +152,14 @@ public class UserController {
             objectMap.put("image", imageUrl);
         }
 
-        userService.partialUpdate(userOptional.get(), objectMap);
+        userService.partialUpdate(instance, objectMap);
 
-        return ResponseEntity.status(HttpStatus.OK).body(userOptional.get());
+        return ResponseEntity.status(HttpStatus.OK).body(instance);
     }
 
     @GetMapping("/findByUsername")
     public ResponseEntity<Optional<User>> getUserByUsername(@Validated @RequestParam(value = "username") String username) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findByUsername(username));
-    }
-
-    @GetMapping("/user-images/{fileCode}")
-    public ResponseEntity<?> downloadFile(@PathVariable("fileCode") String fileCode) {
-        FileDownloadUtil downloadUtil = new FileDownloadUtil();
-
-        Resource resource = null;
-        try {
-            resource = downloadUtil.getFileAsResource(fileCode, "user-images");
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
-        }
-
-        if (resource == null) {
-            return new ResponseEntity<>("File not found", HttpStatus.NOT_FOUND);
-        }
-
-        MediaType contentType;
-
-        if (Objects.equals(FilenameUtils.getExtension(resource.getFilename()), "jpg")) {
-            contentType = MediaType.IMAGE_JPEG;
-        } else {
-            contentType = MediaType.IMAGE_PNG;
-        }
-
-        String headerValue = "attachment; filename=\"" + resource.getFilename() + "\"";
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(contentType)
-                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
-                .body(resource);
     }
 
     @PostMapping("/login")
@@ -188,5 +173,51 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user credentials!");
         }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Object> me(Authentication authentication) {
+        // Obter o nome de usuário do usuário autenticado
+        String username = authentication.getName();
+
+        // Obter o usuário pelo nome de usuário
+        Optional<User> userOptional = userService.findByUsername(username);
+        return userOptional.<ResponseEntity<Object>>map(user -> ResponseEntity.status(HttpStatus.OK).body(user)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found."));
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<Object> changePassword(Authentication authentication, @RequestBody Map<String, String> passwordMap) {
+        // Verificar se as senhas fornecidas são iguais
+        String newPassword = passwordMap.get("newPassword");
+        String confirmPassword = passwordMap.get("confirmPassword");
+
+        if (!newPassword.equals(confirmPassword)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Passwords do not match.");
+        }
+
+        // Obter o nome de usuário do usuário autenticado
+        String username = authentication.getName();
+
+        // Obter o usuário pelo nome de usuário
+        Optional<User> userOptional = userService.findByUsername(username);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
+
+        // Atualizar a senha do usuário
+        User user = userOptional.get();
+
+        Map<Object, Object> objectMap = new HashMap<>();
+        objectMap.put("password", newPassword);
+        userService.partialUpdate(user, objectMap);
+
+        // Gerar token de autenticação
+        String token = jwtService.generateToken(user.getUsername());
+
+        // Retornar token junto com a resposta
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

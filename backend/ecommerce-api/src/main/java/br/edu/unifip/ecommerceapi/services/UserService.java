@@ -55,14 +55,21 @@ public class UserService {
             Field field = ReflectionUtils.findField(User.class, (String) key);
             field.setAccessible(true);
 
-            try {
-                value = BigDecimal.valueOf((double) value);
-            } catch (ClassCastException ignored) {
+            if ("password".equals(key) && value != null) {
+                // Criptografar a senha com BCrypt
+                String encryptedPassword = bCryptPasswordEncoder.encode((String) value);
+                ReflectionUtils.setField(field, user, encryptedPassword);
+            } else {
+                try {
+                    value = BigDecimal.valueOf((double) value);
+                } catch (ClassCastException ignored) {
+                }
+                ReflectionUtils.setField(field, user, value);
             }
-            ReflectionUtils.setField(field, user, value);
         });
         return userRepository.save(user);
     }
+
 
     public List<User> findByActiveTrue() {
         return userRepository.findByActiveTrue();

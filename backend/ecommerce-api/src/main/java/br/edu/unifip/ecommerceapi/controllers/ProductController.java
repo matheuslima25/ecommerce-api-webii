@@ -1,6 +1,7 @@
 package br.edu.unifip.ecommerceapi.controllers;
 
 import br.edu.unifip.ecommerceapi.dtos.ProductDto;
+import br.edu.unifip.ecommerceapi.models.Category;
 import br.edu.unifip.ecommerceapi.models.Product;
 import br.edu.unifip.ecommerceapi.services.ProductService;
 import br.edu.unifip.ecommerceapi.utils.FileDownloadUtil;
@@ -40,11 +41,6 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findAll());
     }
 
-    @GetMapping("/active")
-    public ResponseEntity<List<Product>> getProductsIsActive() {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.findByActiveTrue());
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<Object> getProductById(@PathVariable(value = "id") UUID id) {
         Optional<Product> productOptional = productService.findById(id);
@@ -72,7 +68,7 @@ public class ProductController {
 
             try {
                 String filecode = FileUploadUtil.saveFile(fileName, uploadDir, multipartFile);
-                product.setImage("/api/products/product-images/" + filecode);
+                product.setImage("/api/images/product-images/" + filecode);
             } catch (IOException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Image not accepted.");
             }
@@ -81,23 +77,21 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.save(product, categoryId));
     }
 
-    @DeleteMapping("/soft-delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Object> softDeleteProduct(@PathVariable(value = "id") UUID id) {
         Optional<Product> productOptional = productService.findById(id);
         if (productOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
         }
-        productService.softDelete(productOptional.get());
-        return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully.");
-    }
 
-    @DeleteMapping("/hard-delete/{id}")
-    public ResponseEntity<Object> hardDeleteProduct(@PathVariable(value = "id") UUID id) {
-        Optional<Product> productOptional = productService.findById(id);
-        if (productOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+        Product instance = productOptional.get();
+
+        // Verificar se o registro está ativo
+        if (!instance.isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is not active.");
         }
-        productService.hardDelete(productOptional.get());
+
+        productService.softDelete(instance);
         return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully.");
     }
 
@@ -106,6 +100,13 @@ public class ProductController {
         Optional<Product> productOptional = productService.findById(id);
         if (productOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+        }
+
+        Product instance = productOptional.get();
+
+        // Verificar se o registro está ativo
+        if (!instance.isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is not active.");
         }
 
         Map<Object, Object> objectMap = new HashMap<>();
@@ -123,7 +124,7 @@ public class ProductController {
 
             try {
                 String filecode = FileUploadUtil.saveFile(fileName, uploadDir, multipartFile);
-                imageUrl = "/api/products/product-images/" + filecode;
+                imageUrl = "/api/images/product-images/" + filecode;
             } catch (IOException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Image not accepted.");
             }
@@ -134,9 +135,9 @@ public class ProductController {
             objectMap.put("image", imageUrl);
         }
 
-        productService.partialUpdate(productOptional.get(), objectMap);
+        productService.partialUpdate(instance, objectMap);
 
-        return ResponseEntity.status(HttpStatus.OK).body(productOptional.get());
+        return ResponseEntity.status(HttpStatus.OK).body(instance);
     }
 
     @GetMapping("/findByName")
@@ -147,35 +148,5 @@ public class ProductController {
     @GetMapping("/findByCategoryName")
     public ResponseEntity<List<Product>> getProductByCategoryName(@Validated @RequestParam(value = "name") String name) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findByCategoryName(name));
-    }
-
-    @GetMapping("/product-images/{fileCode}")
-    public ResponseEntity<?> downloadFile(@PathVariable("fileCode") String fileCode) {
-        FileDownloadUtil downloadUtil = new FileDownloadUtil();
-
-        Resource resource = null;
-        try {
-            resource = downloadUtil.getFileAsResource(fileCode, "product-images");
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
-        }
-
-        if (resource == null) {
-            return new ResponseEntity<>("File not found", HttpStatus.NOT_FOUND);
-        }
-
-        MediaType contentType;
-
-        if (Objects.equals(FilenameUtils.getExtension(resource.getFilename()), "jpg")) {
-            contentType = MediaType.IMAGE_JPEG;
-        } else {
-            contentType = MediaType.IMAGE_PNG;
-        }
-
-        String headerValue = "attachment; filename=\"" + resource.getFilename() + "\"";
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(contentType)
-                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
-                .body(resource);
     }
 }

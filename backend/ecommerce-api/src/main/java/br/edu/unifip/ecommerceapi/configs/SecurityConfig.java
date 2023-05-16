@@ -50,9 +50,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers(SIGN_UP_URL, SIGN_IN_URL, PRODUCT_IMAGES_URL, USER_IMAGES_URL).permitAll()
+                .requestMatchers(SIGN_UP_URL, SIGN_IN_URL, IMAGES_URL).permitAll()
                 .and()
-                .authorizeHttpRequests().requestMatchers("/api/users/**", "/api/products/**", "/api/categories/**")
+                .authorizeHttpRequests().requestMatchers("/api/users/**", "/api/products/**", "/api/categories/**", "/api/roles/**")
                 .authenticated().and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

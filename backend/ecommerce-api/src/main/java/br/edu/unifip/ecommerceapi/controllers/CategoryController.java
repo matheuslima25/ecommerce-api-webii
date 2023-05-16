@@ -30,11 +30,6 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.findAll());
     }
 
-    @GetMapping("/active")
-    public ResponseEntity<List<Category>> getCategorysIsActive() {
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findByActiveTrue());
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<Object> getCategoryById(@PathVariable(value = "id") UUID id) {
         Optional<Category> categoryOptional = categoryService.findById(id);
@@ -48,23 +43,21 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.save(category));
     }
 
-    @DeleteMapping("/soft-delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Object> softDeleteProduct(@PathVariable(value = "id") UUID id) {
         Optional<Category> categoryOptional = categoryService.findById(id);
         if (categoryOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category not found.");
         }
-        categoryService.softDelete(categoryOptional.get());
-        return ResponseEntity.status(HttpStatus.OK).body("Category deleted successfully.");
-    }
 
-    @DeleteMapping("/hard-delete/{id}")
-    public ResponseEntity<Object> hardDeleteProduct(@PathVariable(value = "id") UUID id) {
-        Optional<Category> categoryOptional = categoryService.findById(id);
-        if (categoryOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category not found.");
+        Category instance = categoryOptional.get();
+
+        // Verificar se o registro está ativo
+        if (!instance.isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Category is not active.");
         }
-        categoryService.hardDelete(categoryOptional.get());
+
+        categoryService.softDelete(instance);
         return ResponseEntity.status(HttpStatus.OK).body("Category deleted successfully.");
     }
 
@@ -74,7 +67,15 @@ public class CategoryController {
         if (categoryOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category not found.");
         }
-        categoryService.partialUpdate(categoryOptional.get(), objectMap);
+
+        Category instance = categoryOptional.get();
+
+        // Verificar se o registro está ativo
+        if (!instance.isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Category is not active.");
+        }
+
+        categoryService.partialUpdate(instance, objectMap);
         return ResponseEntity.status(HttpStatus.OK).body(categoryOptional.get());
     }
 }

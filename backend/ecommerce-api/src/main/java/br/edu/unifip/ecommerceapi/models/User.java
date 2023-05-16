@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -35,7 +37,13 @@ public class User implements Serializable {
     @Column(nullable = true, length = 64)
     private String image;
     @Column(nullable = false)
-    private String roles;
+    @ManyToMany(fetch = FetchType.EAGER) // A forma que os dados são buscados, nesse caso, antecipadamente, antes de salvar uma instância
+    @JoinTable(
+            name = "TB_USER_ROLE",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
 
     private boolean active = true;
 
