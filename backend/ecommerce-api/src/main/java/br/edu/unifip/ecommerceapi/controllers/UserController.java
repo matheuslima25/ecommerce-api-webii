@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -102,7 +103,7 @@ public class UserController {
 
         // Verificar se o registro está ativo
         if (!instance.isActive()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Category is not active.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not active.");
         }
 
         userService.softDelete(instance);
@@ -164,6 +165,12 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<Object> authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
+        Optional<User> user = userService.findByUsername(authRequest.getUsername());
+
+        if (user.isPresent() && !user.get().isActive()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user credentials or user is not active!");
+        }
+
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
         if (authentication.isAuthenticated()) {
             String token = jwtService.generateToken(authRequest.getUsername());
@@ -182,6 +189,7 @@ public class UserController {
 
         // Obter o usuário pelo nome de usuário
         Optional<User> userOptional = userService.findByUsername(username);
+
         return userOptional.<ResponseEntity<Object>>map(user -> ResponseEntity.status(HttpStatus.OK).body(user)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found."));
     }
 

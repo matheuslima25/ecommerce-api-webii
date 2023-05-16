@@ -14,6 +14,7 @@ public class UserInfoDetails implements UserDetails {
     private final String username;
     private final String password;
     private final List<GrantedAuthority> authorities;
+    private final boolean active;
 
     public UserInfoDetails(User user) {
         username = user.getUsername();
@@ -21,6 +22,7 @@ public class UserInfoDetails implements UserDetails {
         authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().toString()))
                 .collect(Collectors.toList());
+        active = user.isActive();
     }
 
     @Override
@@ -55,6 +57,6 @@ public class UserInfoDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return active;
     }
 }
