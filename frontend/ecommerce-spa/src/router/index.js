@@ -3,6 +3,10 @@ import Router from 'vue-router'
 import Login from '@/components/Login.vue'
 import ProductList from '@/components/ProductList.vue'
 import ProductDetail from '@/components/ProductDetail.vue'
+import CategoryList from '@/components/CategoryList.vue'
+import CategoryDetail from '@/components/CategoryDetail.vue'
+import UserList from '@/components/UserList.vue'
+import UserDetail from '@/components/UserDetail.vue'
 
 Vue.use(Router)
 
@@ -16,13 +20,41 @@ export default new Router({
     {
       path: '/products',
       name: 'ProductList',
-      component: ProductList
+      component: ProductList,
+      meta: { requiresAuth: true }
     },
     {
       path: '/products/:id',
       name: 'ProductDetail',
       component: ProductDetail,
-      props: true
+      props: true,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/categories',
+      name: 'CategoryList',
+      component: CategoryList,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/categories/:id',
+      name: 'CategoryDetail',
+      component: CategoryDetail,
+      props: true,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/users',
+      name: 'UserList',
+      component: UserList,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/users/:id',
+      name: 'UserDetail',
+      component: UserDetail,
+      props: true,
+      meta: { requiresAuth: true }
     }
   ]
 })

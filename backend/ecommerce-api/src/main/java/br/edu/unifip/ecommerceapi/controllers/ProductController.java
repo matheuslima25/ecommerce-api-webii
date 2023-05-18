@@ -36,7 +36,6 @@ public class ProductController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<List<Product>> getAllProducts() {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findAll());
     }

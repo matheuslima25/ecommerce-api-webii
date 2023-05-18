@@ -46,11 +46,12 @@ export default {
         if (json && json.token) {
           localStorage.setItem('token', `Bearer ${json.token}`)
           router.push('/products')
+          window.location.reload()
         } else {
           console.error('Invalid response from server')
         }
       } catch (error) {
-        console.error(error)
+        alert('Erro, nome do usuário ou senha inválidos.')
       }
     }
   }

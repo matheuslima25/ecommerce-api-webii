@@ -15,14 +15,16 @@ new Vue({
   template: '<App/>'
 })
 
-// Intercepta todas as requisições antes de serem enviadas
-axios.interceptors.request.use((config) => {
-  // Adiciona o cabeçalho Authorization com o token no formato Bearer
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-    console.log(`Token set to: ${token}`)
+axios.interceptors.request.use(
+  (config) => {
+    // Adiciona o cabeçalho Authorization com o token no formato Bearer
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = token
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
   }
-  console.log('intercepted!')
-  return config
-})
+)
