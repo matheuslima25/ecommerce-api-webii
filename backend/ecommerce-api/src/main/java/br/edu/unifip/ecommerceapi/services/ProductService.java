@@ -4,9 +4,11 @@ import br.edu.unifip.ecommerceapi.models.Category;
 import br.edu.unifip.ecommerceapi.models.Product;
 import br.edu.unifip.ecommerceapi.repositories.ProductRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
+import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +28,8 @@ public class ProductService {
         this.categoryService = categoryService;
     }
 
-    public List<Product> findAll() {
-        return productRepository.findByActiveTrue();
+    public Page<Product> findAll(Pageable pageable) {
+        return productRepository.findByActiveTrue(pageable);
     }
 
     public Optional<Product> findById(UUID id) {
@@ -77,8 +79,8 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public List<Product> findByActiveTrue() {
-        return productRepository.findByActiveTrue();
+    public Page<Product> findByActiveTrue(Pageable pageable) {
+        return productRepository.findByActiveTrue(pageable);
     }
 
     public List<Product> findByName(String name) {
