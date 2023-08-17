@@ -11,6 +11,9 @@ import br.edu.unifip.ecommerceapi.services.RoleService;
 import br.edu.unifip.ecommerceapi.services.UserService;
 import br.edu.unifip.ecommerceapi.utils.FileDownloadUtil;
 import br.edu.unifip.ecommerceapi.utils.FileUploadUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.apache.commons.io.FilenameUtils;
@@ -32,6 +35,8 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.io.IOException;
 import java.util.*;
+
+import static br.edu.unifip.ecommerceapi.constants.SecurityConstants.SECRET;
 
 @RestController
 @RequestMapping("api/users")
@@ -210,7 +215,7 @@ public class UserController {
         Optional<User> user = userService.findByUsername(authRequest.getUsername());
 
         if (user.isPresent() && !user.get().isActive()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user credentials or user is not active!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid user credentials or user is not active!");
         }
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
@@ -222,6 +227,16 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user credentials!");
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Object> logout(Authentication authentication) {
+        if (authentication != null) {
+            String username = authentication.getName();
+            jwtService.expireToken(username);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body("Logged out");
     }
 
     @GetMapping("/me")
@@ -268,6 +283,6 @@ public class UserController {
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

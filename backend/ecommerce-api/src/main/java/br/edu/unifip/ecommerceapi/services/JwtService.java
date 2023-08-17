@@ -19,6 +19,7 @@ import static br.edu.unifip.ecommerceapi.constants.SecurityConstants.SECRET;
 
 @Component
 public class JwtService {
+    private final Key secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET));
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -66,7 +67,23 @@ public class JwtService {
     }
 
     private Key getSignKey() {
-        byte[] keyBytes= Decoders.BASE64.decode(SECRET);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET));
     }
+
+    public void expireToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(getSignKey())
+                .parseClaimsJws(token)
+                .getBody();
+
+        // Define a expiração do token para a data atual, invalidando-o
+        claims.setExpiration(new Date());
+
+        // Recria o token com a nova expiração
+        Jwts.builder()
+                .setClaims(claims)
+                .signWith(SignatureAlgorithm.HS512, getSignKey())
+                .compact();
+    }
+
 }

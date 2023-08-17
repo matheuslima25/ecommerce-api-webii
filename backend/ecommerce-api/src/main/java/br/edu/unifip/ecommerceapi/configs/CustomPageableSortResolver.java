@@ -16,7 +16,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 public class CustomPageableSortResolver implements HandlerMethodArgumentResolver {
 
-    private static final int DEFAULT_PAGE_NUMBER = 1;
+    private static final int DEFAULT_PAGE_NUMBER = 2;
     private static final int DEFAULT_PAGE_SIZE = 20;
     private static final String DEFAULT_SORT_PROPERTY = "id";
     private static final String DEFAULT_SORT_DIRECTION = "asc"; // asc ou desc
