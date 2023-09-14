@@ -35,11 +35,6 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.findAll());
-    }
-
-    @GetMapping("/active")
-    public ResponseEntity<List<Product>> getProductsIsActive() {
         return ResponseEntity.status(HttpStatus.OK).body(productService.findByActiveTrue());
     }
 
