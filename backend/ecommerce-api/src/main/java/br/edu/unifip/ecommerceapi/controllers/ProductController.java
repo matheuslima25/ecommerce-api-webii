@@ -63,8 +63,8 @@ public class ProductController {
 
         UUID categoryId = null;
 
-        if (productDto.getCategory() != null) {
-            categoryId = productDto.getCategory();
+        if (productDto.category() != null) {
+            categoryId = productDto.category();
         }
 
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;

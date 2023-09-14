@@ -2,31 +2,20 @@ package br.edu.unifip.ecommerceapi.controllers;
 
 import br.edu.unifip.ecommerceapi.dtos.AuthRequest;
 import br.edu.unifip.ecommerceapi.dtos.UserDto;
-import br.edu.unifip.ecommerceapi.models.Category;
-import br.edu.unifip.ecommerceapi.models.Product;
 import br.edu.unifip.ecommerceapi.models.Role;
 import br.edu.unifip.ecommerceapi.models.User;
 import br.edu.unifip.ecommerceapi.services.JwtService;
 import br.edu.unifip.ecommerceapi.services.RoleService;
 import br.edu.unifip.ecommerceapi.services.UserService;
-import br.edu.unifip.ecommerceapi.utils.FileDownloadUtil;
 import br.edu.unifip.ecommerceapi.utils.FileUploadUtil;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +24,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.io.IOException;
 import java.util.*;
-
-import static br.edu.unifip.ecommerceapi.constants.SecurityConstants.SECRET;
 
 @RestController
 @RequestMapping("api/users")
@@ -219,9 +206,11 @@ public class UserController {
         }
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+        System.out.println(authentication.isAuthenticated());
         if (authentication.isAuthenticated()) {
             String token = jwtService.generateToken(authRequest.getUsername());
             Map<String, String> response = new HashMap<String, String>();
+            System.out.println(token);
             response.put("token", token);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } else {
