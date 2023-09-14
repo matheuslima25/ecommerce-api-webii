@@ -82,26 +82,13 @@ public class UserController {
             }
         }
 
-        // Salvar o usuário
-        User savedUser = userService.save(user);
-
         // Obter as roles selecionadas do DTO
         List<UUID> roleIds = userDto.getRoles();
 
-        // Verificar se as roles existem e adicioná-las ao usuário
-        for (UUID roleId : roleIds) {
-            Optional<Role> roleOptional = roleService.findById(roleId);
-            if (roleOptional.isPresent()) {
-                Role role = roleOptional.get();
-                System.out.println(role);
-                savedUser.getRoles().add(role);
-            }
-        }
-
         // Salvar o usuário atualizado com as roles
-        userService.save(savedUser);
+        userService.save(user, roleIds);
 
-        String token = jwtService.generateToken(savedUser.getUsername());
+        String token = jwtService.generateToken(user.getUsername());
 
         Map<String, String> response = new HashMap<>();
         response.put("token", token);

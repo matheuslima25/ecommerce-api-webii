@@ -1,5 +1,6 @@
 package br.edu.unifip.ecommerceapi.services;
 
+import br.edu.unifip.ecommerceapi.models.Role;
 import br.edu.unifip.ecommerceapi.models.User;
 import br.edu.unifip.ecommerceapi.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -19,10 +20,12 @@ public class UserService {
 
     final UserRepository userRepository;
     final BCryptPasswordEncoder bCryptPasswordEncoder;
+    final RoleService roleService;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, RoleService roleService) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.roleService = roleService;
     }
 
     public List<User> findAll() {
@@ -34,8 +37,16 @@ public class UserService {
     }
 
     @Transactional
-    public User save(User user) {
+    public User save(User user, List<UUID> roleIds) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        // Verificar se as roles existem e adicioná-las ao usuário
+        for (UUID roleId : roleIds) {
+            Optional<Role> roleOptional = roleService.findById(roleId);
+            if (roleOptional.isPresent()) {
+                Role role = roleOptional.get();
+                user.getRoles().add(role);
+            }
+        }
         return userRepository.save(user);
     }
 
