@@ -1,7 +1,9 @@
 package br.edu.unifip.ecommerceapi.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -10,6 +12,8 @@ import java.util.UUID;
 @Entity
 @Data
 @Table(name = "TB_PRODUCT")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -32,4 +36,9 @@ public class Product implements Serializable {
     @Column(nullable = true, length = 64)
     private String image;
 
+    public Product(String name, String description, BigDecimal price) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+    }
 }

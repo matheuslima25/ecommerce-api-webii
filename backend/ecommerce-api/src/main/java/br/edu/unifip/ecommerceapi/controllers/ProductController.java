@@ -1,29 +1,22 @@
 package br.edu.unifip.ecommerceapi.controllers;
 
 import br.edu.unifip.ecommerceapi.dtos.ProductDto;
-import br.edu.unifip.ecommerceapi.models.Category;
 import br.edu.unifip.ecommerceapi.models.Product;
 import br.edu.unifip.ecommerceapi.services.ProductService;
-import br.edu.unifip.ecommerceapi.utils.FileDownloadUtil;
 import br.edu.unifip.ecommerceapi.utils.FileUploadUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.util.*;
 

@@ -18,6 +18,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     void delete(Product product);
 
+    List<Product> findByActiveTrue();
+
     Page<Product> findByActiveTrue(Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE p.name = :name and p.active = true")

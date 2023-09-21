@@ -28,6 +28,10 @@ public class ProductService {
         this.categoryService = categoryService;
     }
 
+    public List<Product> findAll() {
+        return productRepository.findByActiveTrue();
+    }
+
     public Page<Product> findAll(Pageable pageable) {
         return productRepository.findByActiveTrue(pageable);
     }
