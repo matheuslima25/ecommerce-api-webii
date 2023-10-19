@@ -61,6 +61,14 @@ public class ProductController {
             categoryId = productDto.getCategory();
         }
 
+        Product product_created;
+
+        try {
+            product_created = productService.save(product, categoryId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         MultipartFile multipartFile = multipartRequest.getFile("image");
 
@@ -76,7 +84,7 @@ public class ProductController {
             }
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.save(product, categoryId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(product_created);
     }
 
     @DeleteMapping("/soft-delete/{id}")
