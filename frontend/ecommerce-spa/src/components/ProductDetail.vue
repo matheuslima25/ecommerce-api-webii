@@ -1,9 +1,10 @@
 <template>
   <div>
-    <h2 class="mt-2">Product Registation</h2>
+    <h2 class="mt-2" v-if="product.id" >Product Update</h2>
+    <h2 class="mt-2" v-if="!product.id" >Product Create</h2>
     <form @submit.prevent="save" class="m-5">
       <div class="form-group" v-if="product.image">
-        <img :src="baseUrl + product.image" class="rounded mx-auto d-block" :alt="`${product.name}`">
+        <img :src="`${baseUrl}${product.image}`" class="rounded mx-auto d-block" :alt="`${product.name}`">
       </div>
       <div class="form-group">
         <label for="formName" class="form-label">Product name</label>
@@ -62,7 +63,6 @@ export default {
     }
   },
   created () {
-    this.getProductList()
   },
   mounted () {
     // Extrai o id do parâmetro da URL usando a biblioteca `vue-router`
@@ -75,17 +75,6 @@ export default {
   methods: {
     cloneProduct (product) {
       return JSON.parse(JSON.stringify(product))
-    },
-    getProductList () {
-      axios.get('http://localhost:8080/api/products')
-        .then(({ data }) => {
-          this.result = data
-          this.originalList = data.map(p => ({ ...p }))
-        })
-        .catch((error) => {
-          alert('Error loading products!')
-          console.log(error)
-        })
     },
     async getCategoryList () {
       const response = await fetch('http://localhost:8080/api/categories')
@@ -191,25 +180,6 @@ export default {
           alert('Error updating product!')
           console.log(error)
         })
-    },
-    deleteProduct (product) {
-      const confirmed = confirm('Are you sure you want to delete this product?')
-      if (confirmed) {
-        axios
-          .delete(`http://localhost:8080/api/products/${product.id}`)
-          .then(({ data }) => {
-            alert('Product deleted successfully!')
-            this.getProductList()
-          })
-          .catch((error) => {
-            alert('Error deleting product!')
-            console.log(error)
-          })
-      }
-    },
-    editProduct (product) {
-      this.product = this.cloneProduct(product)
-      this.selectedCategory = this.product.category.id
     },
     getProduct (productId) {
       // Busca o produto pelo id usando a API

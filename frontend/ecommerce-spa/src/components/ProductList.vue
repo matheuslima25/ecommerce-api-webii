@@ -53,9 +53,12 @@ export default {
       }
     }
   },
+  created () {
+    this.getProductList()
+  },
   mounted () {
     this.getCategoryList()
-    this.getProductList()
+    // this.getProductList()
   },
   methods: {
     getProductList () {
@@ -78,7 +81,7 @@ export default {
       const confirmed = confirm('Are you sure you want to delete this product?')
       if (confirmed) {
         axios
-          .delete(`http://localhost:8080/api/products/${product.id}`)
+          .delete(`http://localhost:8080/api/products/soft-delete/${product.id}`)
           .then(({ data }) => {
             alert('Product deleted successfully!')
             this.getProductList()
