@@ -78,7 +78,9 @@ public class ProductController {
 
             try {
                 String filecode = FileUploadUtil.saveFile(fileName, uploadDir, multipartFile);
-                product.setImage("/api/products/product-images/" + filecode);
+                Map<Object, Object> objectMap = new HashMap<>();
+                objectMap.put("image", "/api/products/product-images/" + filecode);
+                productService.partialUpdate(product_created, objectMap);
             } catch (IOException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Image not accepted.");
             }
