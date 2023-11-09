@@ -1,0 +1,22 @@
+Index: src/main/java/br/edu/unifip/ecommerceapi/services/ProductService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package br.edu.unifip.ecommerceapi.services;\r\n\r\nimport br.edu.unifip.ecommerceapi.models.Category;\r\nimport br.edu.unifip.ecommerceapi.models.Product;\r\nimport br.edu.unifip.ecommerceapi.repositories.ProductRepository;\r\nimport jakarta.transaction.Transactional;\r\nimport org.springframework.stereotype.Service;\r\nimport org.springframework.util.ReflectionUtils;\r\n\r\nimport java.math.BigDecimal;\r\nimport java.util.List;\r\nimport java.util.Map;\r\nimport java.util.Optional;\r\nimport java.util.UUID;\r\n\r\nimport java.lang.reflect.Field;\r\n\r\n@Service\r\npublic class ProductService {\r\n\r\n    final ProductRepository productRepository;\r\n    final CategoryService categoryService;\r\n\r\n    public ProductService(ProductRepository productRepository, CategoryService categoryService){\r\n        this.productRepository = productRepository;\r\n        this.categoryService = categoryService;\r\n    }\r\n\r\n    public List<Product> findAll() {\r\n        return productRepository.findAll();\r\n    }\r\n\r\n    public Optional<Product> findById(UUID id) {\r\n        return productRepository.findById(id);\r\n    }\r\n\r\n    @Transactional\r\n    public Product save(Product product, UUID categoryId){\r\n        if (categoryId != null) {\r\n            Category category = categoryService.findById(categoryId)\r\n                    .orElseThrow(() -> new RuntimeException(\"Category not found.\"));\r\n            product.setCategory(category);\r\n        }\r\n        return productRepository.save(product);\r\n    }\r\n\r\n    @Transactional // você garante que eles vão ser executados dentro um contexto transacional e o rollback\r\n    // será feito caso ocorra algum erro\r\n    public void delete(Product product) {\r\n        productRepository.delete(product);\r\n    }\r\n\r\n    public Product partialUpdate(Product product, Map<Object, Object> objectMap) {\r\n        if (objectMap.containsKey(\"category\")) {\r\n            UUID categoryId = (UUID) objectMap.get(\"category\");\r\n            Category category = categoryService.findById(categoryId)\r\n                    .orElseThrow(() -> new RuntimeException(\"Category not found.\"));\r\n            product.setCategory(category);\r\n            objectMap.remove(\"category\");\r\n        }\r\n\r\n        objectMap.forEach((key, value) -> {\r\n            Field field = ReflectionUtils.findField(Product.class, (String) key);\r\n            field.setAccessible(true);\r\n\r\n            try {\r\n                value = BigDecimal.valueOf((double) value);\r\n            }\r\n            catch(ClassCastException ignored) { }\r\n            ReflectionUtils.setField(field, product, value);\r\n        });\r\n        return productRepository.save(product);\r\n    }\r\n\r\n    public List<Product> findByActiveTrue() {\r\n        return productRepository.findByActiveTrue();\r\n    }\r\n\r\n    public List<Product> findByName(String name) {\r\n        return productRepository.findByName(name);\r\n    }\r\n\r\n    public List<Product> findByCategoryName(String name) {\r\n        return productRepository.findByCategoryName(name);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/br/edu/unifip/ecommerceapi/services/ProductService.java b/src/main/java/br/edu/unifip/ecommerceapi/services/ProductService.java
+--- a/src/main/java/br/edu/unifip/ecommerceapi/services/ProductService.java	(revision b40dabf98c7b944ce2067782341e7e4fb1e67b3b)
++++ b/src/main/java/br/edu/unifip/ecommerceapi/services/ProductService.java	(date 1683066964497)
+@@ -52,8 +52,9 @@
+ 
+     public Product partialUpdate(Product product, Map<Object, Object> objectMap) {
+         if (objectMap.containsKey("category")) {
+-            UUID categoryId = (UUID) objectMap.get("category");
+-            Category category = categoryService.findById(categoryId)
++            // se nulo, setCategory(nulo)
++            String categoryId = (String) objectMap.get("category");
++            Category category = categoryService.findById(UUID.fromString(categoryId))
+                     .orElseThrow(() -> new RuntimeException("Category not found."));
+             product.setCategory(category);
+             objectMap.remove("category");

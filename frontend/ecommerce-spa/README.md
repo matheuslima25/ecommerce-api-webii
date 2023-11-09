@@ -1,4 +1,4 @@
-# webiifront-vue
+# webii-ecommerce
 
 ## Project setup
 ```

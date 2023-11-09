@@ -1,0 +1,46 @@
+Index: src/main/java/br/edu/unifip/ecommerceapi/utils/FileUploadUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package br.edu.unifip.ecommerceapi.utils;\r\n\r\nimport java.io.IOException;\r\nimport java.io.InputStream;\r\nimport java.nio.file.Files;\r\nimport java.nio.file.Path;\r\nimport java.nio.file.Paths;\r\nimport java.nio.file.StandardCopyOption;\r\n\r\nimport org.apache.commons.lang3.RandomStringUtils;\r\nimport org.springframework.web.multipart.MultipartFile;\r\n\r\npublic class FileUploadUtil {\r\n    public static String saveFile(String fileName, String uploadDir, MultipartFile multipartFile)\r\n            throws IOException {\r\n        Path uploadPath = Paths.get(uploadDir);\r\n\r\n        if (!Files.exists(uploadPath)) {\r\n            Files.createDirectories(uploadPath);\r\n        }\r\n\r\n        String fileCode = RandomStringUtils.randomAlphanumeric(8);\r\n\r\n        try (InputStream inputStream = multipartFile.getInputStream()) {\r\n            Path filePath = uploadPath.resolve(fileCode + \"-\" + fileName);\r\n            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);\r\n        } catch (IOException ioe) {\r\n            throw new IOException(\"Could not save file: \" + fileName, ioe);\r\n        }\r\n\r\n        return fileCode;\r\n    }\r\n}
+===================================================================
+diff --git a/src/main/java/br/edu/unifip/ecommerceapi/utils/FileUploadUtil.java b/src/main/java/br/edu/unifip/ecommerceapi/utils/FileUploadUtil.java
+--- a/src/main/java/br/edu/unifip/ecommerceapi/utils/FileUploadUtil.java	
++++ b/src/main/java/br/edu/unifip/ecommerceapi/utils/FileUploadUtil.java	
+@@ -19,6 +19,8 @@
+             Files.createDirectories(uploadPath);
+         }
+ 
++        //https://github.com/matheuslima25/ecommerce-vue-webii
++
+         String fileCode = RandomStringUtils.randomAlphanumeric(8);
+ 
+         try (InputStream inputStream = multipartFile.getInputStream()) {
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n\txsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n\t<modelVersion>4.0.0</modelVersion>\r\n\t<parent>\r\n\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t<artifactId>spring-boot-starter-parent</artifactId>\r\n\t\t<version>3.0.6</version>\r\n\t\t<relativePath/> <!-- lookup parent from repository -->\r\n\t</parent>\r\n\t<groupId>br.edu.unifip</groupId>\r\n\t<artifactId>ecommerce-api</artifactId>\r\n\t<version>0.0.1-SNAPSHOT</version>\r\n\t<name>ecommerce-api</name>\r\n\t<description>Projeto base para a disciplina de WEB II do curso de ADS</description>\r\n\t<properties>\r\n\t\t<java.version>20</java.version>\r\n\t</properties>\r\n\t<dependencies>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-data-jpa</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-web</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-validation</artifactId>\r\n\t\t</dependency>\r\n\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.postgresql</groupId>\r\n\t\t\t<artifactId>postgresql</artifactId>\r\n\t\t\t<scope>runtime</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t<optional>true</optional>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.apache.commons</groupId>\r\n\t\t\t<artifactId>commons-lang3</artifactId>\r\n\t\t</dependency>\r\n\r\n\t\t<dependency>\r\n\t\t\t<groupId>commons-io</groupId>\r\n\t\t\t<artifactId>commons-io</artifactId>\r\n\t\t\t<version>2.11.0</version>\r\n\t\t</dependency>\r\n\r\n\t</dependencies>\r\n\r\n\t<build>\r\n\t\t<plugins>\r\n\t\t\t<plugin>\r\n\t\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t\t<artifactId>spring-boot-maven-plugin</artifactId>\r\n\t\t\t\t<configuration>\r\n\t\t\t\t\t<excludes>\r\n\t\t\t\t\t\t<exclude>\r\n\t\t\t\t\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t\t\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t\t\t\t</exclude>\r\n\t\t\t\t\t</excludes>\r\n\t\t\t\t</configuration>\r\n\t\t\t</plugin>\r\n\t\t</plugins>\r\n\t</build>\r\n\r\n</project>\r\n
+===================================================================
+diff --git a/pom.xml b/pom.xml
+--- a/pom.xml	
++++ b/pom.xml	
+@@ -21,10 +21,12 @@
+ 			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+ 		</dependency>
++
+ 		<dependency>
+ 			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-web</artifactId>
+ 		</dependency>
++
+ 		<dependency>
+ 			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-validation</artifactId>
+@@ -40,6 +42,7 @@
+ 			<artifactId>lombok</artifactId>
+ 			<optional>true</optional>
+ 		</dependency>
++
+ 		<dependency>
+ 			<groupId>org.springframework.boot</groupId>
+ 			<artifactId>spring-boot-starter-test</artifactId>
