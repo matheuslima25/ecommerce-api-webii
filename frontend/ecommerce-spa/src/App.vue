@@ -1,17 +1,14 @@
 <template>
-  <div id="app">
-    <Header/>
-    <router-view />
-  </div>
+  <HelloWorld/>
 </template>
 
 <script>
-import Header from '@/components/Header.vue'
+import HelloWorld from './components/HelloWorld.vue'
 
 export default {
   name: 'App',
   components: {
-    Header
+    HelloWorld
   }
 }
 </script>

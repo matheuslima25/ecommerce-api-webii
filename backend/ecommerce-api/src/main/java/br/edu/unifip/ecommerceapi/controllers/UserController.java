@@ -193,11 +193,9 @@ public class UserController {
         }
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-        System.out.println(authentication.isAuthenticated());
         if (authentication.isAuthenticated()) {
             String token = jwtService.generateToken(authRequest.getUsername());
             Map<String, String> response = new HashMap<String, String>();
-            System.out.println(token);
             response.put("token", token);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } else {
